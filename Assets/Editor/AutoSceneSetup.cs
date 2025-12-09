@@ -225,7 +225,7 @@ public class AutoSceneSetup : EditorWindow
 
         // Scroll View pour les recommandations
         GameObject scrollView = CreateScrollView(canvas.transform, "RecommendationsScrollView");
-        AddComponentIfMissing<SmartRetailAR.UI.RecommendationUI>(scrollView);
+        AddComponentIfMissing<SmartRetailAR.Recommendations.RecommendationUI>(scrollView);
 
         // Bouton retour
         CreateMenuButton(canvas.transform, "BackButton", "Retour", new Vector2(0.1f, 0.05f), "MainMenu");
