@@ -231,60 +231,566 @@ Edit > Project Settings > Script Execution Order
 
 ---
 
-## 📊 Workflow Complet Utilisateur
+## 📊 Workflows Complets - Guide Step by Step
 
 ### Workflow 1 : Scan → Visualisation AR → Recommandations
 
+#### Étape 1 : Démarrage de l'Application
+**Durée** : 0.5-1 seconde
+
+**Séquence d'exécution** :
 ```
-1. Démarrage application
-   └─> MainMenu.unity chargée
-       └─> GameManager initialisé
-       
-2. Utilisateur clique "Scanner QR"
-   └─> QRScanner.unity chargée
-       └─> QRCodeScanner activé
-       └─> Caméra démarrée
-       
-3. QR Code scanné
-   └─> Produit extrait (ex: PROD001)
-       └─> ProductManager.SetCurrentProduct()
-       
-4. Transition automatique vers ARProductView
-   └─> ARSessionManager démarre session AR
-       └─> ARProductOverlay affiche infos produit
-       └─> ImageTrackingManager suit le produit
-       
-5. Utilisateur clique "Voir Alternatives"
-   └─> Recommendations.unity chargée
-       └─> RecommendationEngine calcule alternatives
-       └─> RecommendationUI affiche les cartes produits
-       
-6. Utilisateur clique "Retour Menu"
-   └─> MainMenu.unity rechargée
-       └─> Cycle complet terminé
+1.1. Unity charge MainMenu.unity
+     └─> Lecture du fichier de scène
+     └─> Création de la hiérarchie GameObjects
+     
+1.2. GameManager.Awake() s'exécute en PREMIER (Execution Order: -100)
+     └─> Vérification singleton : if (Instance == null) Instance = this;
+     └─> DontDestroyOnLoad(gameObject)
+     └─> Initialisation de AppSettings.Instance
+     
+1.3. ProductDatabase initialisation (Lazy Loading)
+     └─> Premier accès déclenche LoadFromJson()
+     └─> Lecture de Assets/Data/products.json
+     └─> Parsing JSON → List<Product>
+     └─> Indexation par ID pour accès O(1)
+     
+1.4. MainMenuController.Start() s'exécute
+     └─> Configuration des boutons UI
+     └─> Câblage des événements OnClick
+     └─> Affichage du menu principal
 ```
 
-### Workflow 2 : Configuration
+**Validation** :
+- ✅ Console : "GameManager initialized"
+- ✅ Console : "ProductDatabase loaded: X products"
+- ✅ UI : Menu principal visible avec 4 boutons
+
+---
+
+#### Étape 2 : Navigation vers Scanner QR
+**Durée** : 0.3-0.5 seconde
+
+**Séquence d'exécution** :
+```
+2.1. Utilisateur clique sur bouton "Scanner QR"
+     └─> MainMenuController.OnScanQRButtonClick()
+     └─> SceneLoader.LoadScene("QRScanner")
+     
+2.2. Unity décharge MainMenu (sauf DontDestroyOnLoad objects)
+     └─> Destruction des GameObjects de la scène
+     └─> GameManager PERSISTE (DontDestroyOnLoad)
+     
+2.3. Unity charge QRScanner.unity
+     └─> Création de la hiérarchie de scène
+     └─> Instanciation Camera, Canvas, QRCodeScanner
+     
+2.4. QRCodeScanner.Start() s'exécute
+     └─> WebCamTexture.devices pour lister caméras
+     └─> Sélection de la caméra arrière
+     └─> webCamTexture = new WebCamTexture(selectedDevice.name)
+     └─> webCamTexture.Play()
+     
+2.5. QRCodeScanner.Update() commence à s'exécuter
+     └─> Chaque frame : lecture du webCamTexture
+     └─> Tentative de décodage QR avec ZXing (si implémenté)
+```
+
+**Validation** :
+- ✅ Console : "QRScanner scene loaded"
+- ✅ UI : Flux caméra visible à l'écran
+- ✅ UI : Zone de visée visible au centre
+- ✅ UI : Instructions "Pointez vers un QR Code"
+
+---
+
+#### Étape 3 : Scan du QR Code
+**Durée** : 1-3 secondes (selon conditions lumineuses)
+
+**Séquence d'exécution** :
+```
+3.1. QR Code détecté dans le flux caméra
+     └─> ZXing.BarcodeReader.Decode(pixels)
+     └─> Result != null
+     
+3.2. Validation du format QR
+     └─> Format attendu : "SMARTRETAIL:PROD001"
+     └─> Split sur ":" pour extraire ID
+     └─> productId = "PROD001"
+     
+3.3. Recherche du produit dans la base
+     └─> Product product = ProductDatabase.Instance.GetProductById(productId)
+     └─> if (product == null) → Afficher erreur "Produit inconnu"
+     └─> if (product != null) → Continuer
+     
+3.4. Enregistrement du produit courant
+     └─> ProductManager.Instance.SetCurrentProduct(product)
+     └─> Event OnProductSelected déclenché
+     
+3.5. Arrêt de la caméra
+     └─> webCamTexture.Stop()
+     └─> Libération des ressources
+     
+3.6. Transition automatique vers AR
+     └─> Délai de 0.5s pour feedback visuel
+     └─> SceneLoader.LoadScene("ARProductView")
+```
+
+**Validation** :
+- ✅ Console : "QR Code detected: SMARTRETAIL:PROD001"
+- ✅ Console : "Product found: Lait Bio Entier"
+- ✅ UI : Feedback visuel (flash vert ou animation)
+- ✅ État : ProductManager.CurrentProduct != null
+
+---
+
+#### Étape 4 : Initialisation de la Session AR
+**Durée** : 1-2 secondes
+
+**Séquence d'exécution** :
+```
+4.1. Unity charge ARProductView.unity
+     └─> Création XR Origin GameObject
+     └─> Création AR Session GameObject
+     
+4.2. ARSessionManager.Awake()
+     └─> Recherche XROrigin dans la scène
+     └─> xrOrigin = GetComponent<XROrigin>()
+     └─> Vérification compatibilité AR
+     
+4.3. ARSessionManager.OnEnable()
+     └─> if (ARSession.state == ARSessionState.None)
+     └─> Démarrage session : ARSession.enabled = true
+     └─> Attente état SessionTracking
+     
+4.4. Boucle d'attente tracking AR
+     └─> while (ARSession.state != ARSessionState.SessionTracking)
+     └─> yield return new WaitForSeconds(0.1f)
+     └─> Timeout après 10 secondes
+     
+4.5. ARSessionManager.OnSessionInitialized()
+     └─> Event déclenché quand tracking actif
+     └─> ARPlacementManager activé
+     └─> ImageTrackingManager activé
+```
+
+**Validation** :
+- ✅ Console : "AR Session initializing..."
+- ✅ Console : "AR Session state: SessionTracking"
+- ✅ UI : Flux caméra AR visible
+- ✅ État : ARSession.state == ARSessionState.SessionTracking
+
+---
+
+#### Étape 5 : Affichage Overlay AR Produit
+**Durée** : 0.5-1 seconde
+
+**Séquence d'exécution** :
+```
+5.1. ARProductOverlay.Start()
+     └─> Product currentProduct = ProductManager.Instance.CurrentProduct
+     └─> if (currentProduct == null) → Erreur et retour menu
+     
+5.2. Création de l'UI Overlay
+     └─> Canvas worldSpace créé devant caméra
+     └─> Position initiale : 1 mètre devant caméra
+     └─> Rotation billboard : face à la caméra
+     
+5.3. Peuplement des données UI
+     └─> productNameText.text = currentProduct.name
+     └─> priceText.text = $"{currentProduct.price:C2}"
+     └─> brandText.text = currentProduct.brand
+     └─> originText.text = $"Origine: {currentProduct.origin}"
+     
+5.4. Affichage NutriScore
+     └─> NutriScoreDisplay.UpdateScore(currentProduct.nutrition.nutriScore)
+     └─> Couleur selon score : A=Vert, E=Rouge
+     └─> Animation d'apparition
+     
+5.5. Affichage EcoScore
+     └─> EcoScoreDisplay.UpdateScore(currentProduct.ecoScore)
+     └─> Barre de progression 0-100
+     └─> Couleur gradient selon score
+     
+5.6. ARProductOverlay.LateUpdate() en boucle
+     └─> Chaque frame : mise à jour position overlay
+     └─> Billboard rotation : toujours face caméra
+     └─> Distance maintenue : 1-2 mètres
+```
+
+**Validation** :
+- ✅ UI : Panel AR visible avec infos produit
+- ✅ UI : NutriScore affiché avec bonne couleur
+- ✅ UI : EcoScore visible (0-100)
+- ✅ Comportement : Panel suit le mouvement caméra
+
+---
+
+#### Étape 6 : Interaction Utilisateur en AR
+**Durée** : Variable (exploration utilisateur)
+
+**Options disponibles** :
+```
+6.1. Bouton "Voir Alternatives"
+     └─> ProductInfoPanel.OnAlternativesButtonClick()
+     └─> Transition vers Recommendations
+     
+6.2. Bouton "Plus d'Infos"
+     └─> ProductInfoPanel.OnMoreInfoButtonClick()
+     └─> Affichage panel détaillé (nutrition complète)
+     
+6.3. Bouton "Retour"
+     └─> SceneLoader.LoadScene("MainMenu")
+     └─> Nettoyage session AR
+```
+
+---
+
+#### Étape 7 : Transition vers Recommandations
+**Durée** : 0.5-1 seconde
+
+**Séquence d'exécution** :
+```
+7.1. Utilisateur clique "Voir Alternatives"
+     └─> ProductInfoPanel.OnAlternativesButtonClick()
+     └─> Product currentProduct = ProductManager.Instance.CurrentProduct
+     
+7.2. ARSessionManager.OnDisable()
+     └─> Pause session AR : ARSession.enabled = false
+     └─> Arrêt tracking images
+     
+7.3. Chargement Recommendations.unity
+     └─> Unity décharge ARProductView
+     └─> Destruction objets AR (XROrigin, ARSession)
+     └─> GameManager PERSISTE
+     
+7.4. RecommendationEngine.Start()
+     └─> Récupération produit courant
+     └─> Calcul des alternatives
+```
+
+**Validation** :
+- ✅ Console : "AR Session stopped"
+- ✅ Console : "Recommendations scene loaded"
+- ✅ État : Session AR proprement fermée
+
+---
+
+#### Étape 8 : Calcul des Recommandations
+**Durée** : 0.2-0.5 seconde
+
+**Séquence d'exécution** :
+```
+8.1. RecommendationEngine.CalculateRecommendations(currentProduct)
+     └─> Récupération alternatives du produit
+     └─> alternatives = currentProduct.alternatives (IDs)
+     
+8.2. Chargement des produits alternatifs
+     └─> foreach (string altId in alternatives)
+     └─> Product alt = ProductDatabase.Instance.GetProductById(altId)
+     └─> recommendedProducts.Add(alt)
+     
+8.3. Application des filtres utilisateur
+     └─> RecommendationFilter.ApplyFilters(recommendedProducts)
+     └─> Filtrage par prix (si slider activé)
+     └─> Filtrage par EcoScore (si toggle actif)
+     └─> Filtrage par Bio (si toggle actif)
+     
+8.4. Tri des recommandations
+     └─> Calcul score combiné pour chaque produit
+     └─> score = 0.3*ecoScore + 0.3*nutriScore + 0.2*priceScore + 0.2*bioBonus
+     └─> Tri décroissant par score
+     
+8.5. Limitation du nombre de résultats
+     └─> Garder les 5 meilleurs
+     └─> return topRecommendations
+```
+
+**Validation** :
+- ✅ Console : "Calculating recommendations for PROD001"
+- ✅ Console : "Found X alternatives"
+- ✅ Console : "After filtering: Y products"
+
+---
+
+#### Étape 9 : Affichage des Recommandations
+**Durée** : 0.3-0.5 seconde
+
+**Séquence d'exécution** :
+```
+9.1. RecommendationUI.DisplayRecommendations(recommendations)
+     └─> Effacement du contenu précédent du ScrollView
+     └─> foreach (Product product in recommendations)
+     
+9.2. Pour chaque produit recommandé
+     └─> Instanciation RecommendationCard prefab
+     └─> SetParent(scrollViewContent)
+     └─> Peuplement des données :
+         - card.productNameText = product.name
+         - card.priceText = product.price
+         - card.nutriScoreImage = GetNutriScoreSprite(product.nutrition.nutriScore)
+         - card.ecoScoreFill = product.ecoScore / 100f
+         
+9.3. Configuration des callbacks
+     └─> card.button.onClick.AddListener(() => OnProductCardClick(product))
+     └─> Animation d'apparition (fade in + scale)
+     
+9.4. Mise à jour layout
+     └─> LayoutRebuilder.ForceRebuildLayoutImmediate(scrollViewContent)
+     └─> Canvas.ForceUpdateCanvases()
+```
+
+**Validation** :
+- ✅ UI : Liste de produits alternatifs visible
+- ✅ UI : Chaque carte affiche nom, prix, scores
+- ✅ UI : Cartes cliquables
+- ✅ Comportement : Scroll fonctionnel
+
+---
+
+#### Étape 10 : Retour au Menu Principal
+**Durée** : 0.3-0.5 seconde
+
+**Séquence d'exécution** :
+```
+10.1. Utilisateur clique "Retour Menu"
+      └─> RecommendationUI.OnBackButtonClick()
+      └─> SceneLoader.LoadScene("MainMenu")
+      
+10.2. Nettoyage de la scène Recommendations
+      └─> Destruction des cartes produits
+      └─> Libération des ressources UI
+      
+10.3. Rechargement MainMenu.unity
+      └─> GameManager toujours présent
+      └─> ProductDatabase toujours en mémoire
+      └─> MainMenuController.Start() réinitialise UI
+      
+10.4. Réinitialisation de l'état
+      └─> ProductManager.CurrentProduct peut être gardé ou null
+      └─> Option : conserver historique navigation
+```
+
+**Validation** :
+- ✅ UI : Menu principal affiché
+- ✅ État : Retour à l'état initial
+- ✅ Console : Pas d'erreurs ou warnings
+- ✅ Mémoire : Pas de memory leaks
+
+---
+
+### Workflow 2 : Configuration des Paramètres
+
+#### Étape 1 : Accès aux Paramètres
+**Durée** : 0.3 seconde
+
+**Séquence d'exécution** :
+```
+1.1. Depuis n'importe quelle scène, clic sur "⚙️ Paramètres"
+     └─> Current scene controller : OnSettingsButtonClick()
+     └─> Sauvegarde état actuel (optionnel)
+     
+1.2. Chargement Settings.unity
+     └─> SceneLoader.LoadScene("Settings")
+     └─> GameManager persiste
+     
+1.3. AppSettings.Awake()
+     └─> if (Instance == null) Instance = this;
+     └─> DontDestroyOnLoad(gameObject)
+     
+1.4. AppSettings.LoadSettings()
+     └─> Lecture PlayerPrefs :
+         - arMode = PlayerPrefs.GetInt("ARMode", 0)
+         - scanFrequency = PlayerPrefs.GetFloat("ScanFrequency", 30f)
+         - enableSound = PlayerPrefs.GetInt("EnableSound", 1) == 1
+         - enableVibration = PlayerPrefs.GetInt("EnableVibration", 1) == 1
+```
+
+**Validation** :
+- ✅ UI : Scène Settings chargée
+- ✅ Console : "Settings loaded"
+- ✅ État : AppSettings.Instance != null
+
+---
+
+#### Étape 2 : Affichage des Options
+**Durée** : 0.1 seconde
+
+**Séquence d'exécution** :
+```
+2.1. SettingsPanel.Start()
+     └─> Récupération des paramètres actuels
+     └─> AppSettings settings = AppSettings.Instance
+     
+2.2. Initialisation des contrôles UI
+     └─> arModeDropdown.value = settings.arMode
+     └─> scanFrequencySlider.value = settings.scanFrequency
+     └─> soundToggle.isOn = settings.enableSound
+     └─> vibrationToggle.isOn = settings.enableVibration
+     
+2.3. Câblage des événements
+     └─> arModeDropdown.onValueChanged.AddListener(OnARModeChanged)
+     └─> scanFrequencySlider.onValueChanged.AddListener(OnScanFrequencyChanged)
+     └─> soundToggle.onValueChanged.AddListener(OnSoundToggled)
+     └─> vibrationToggle.onValueChanged.AddListener(OnVibrationToggled)
+```
+
+**Validation** :
+- ✅ UI : Tous les contrôles affichent valeurs actuelles
+- ✅ UI : Dropdowns, sliders, toggles fonctionnels
+
+---
+
+#### Étape 3 : Modification Interactive
+**Durée** : Variable (interaction utilisateur)
+
+**Séquence pour chaque modification** :
+```
+3.1. Utilisateur modifie un paramètre
+     └─> Event onValueChanged déclenché
+     
+3.2. Exemple : Toggle Son activé
+     └─> OnSoundToggled(bool value)
+     └─> AppSettings.Instance.enableSound = value
+     └─> Feedback visuel (animation toggle)
+     
+3.3. Exemple : Slider Fréquence Scan
+     └─> OnScanFrequencyChanged(float value)
+     └─> AppSettings.Instance.scanFrequency = value
+     └─> scanFrequencyValueText.text = $"{value:F1} Hz"
+     
+3.4. Sauvegarde automatique en temps réel (optionnel)
+     └─> PlayerPrefs.SetInt("EnableSound", value ? 1 : 0)
+     └─> PlayerPrefs.Save()
+```
+
+**Validation** :
+- ✅ UI : Changements visibles immédiatement
+- ✅ État : AppSettings.Instance mis à jour
+- ✅ UI : Labels affichent nouvelles valeurs
+
+---
+
+#### Étape 4 : Sauvegarde Explicite
+**Durée** : 0.1 seconde
+
+**Séquence d'exécution** :
+```
+4.1. Utilisateur clique "Sauvegarder"
+     └─> SettingsPanel.OnSaveButtonClick()
+     └─> AppSettings.Instance.SaveSettings()
+     
+4.2. AppSettings.SaveSettings()
+     └─> PlayerPrefs.SetInt("ARMode", arMode)
+     └─> PlayerPrefs.SetFloat("ScanFrequency", scanFrequency)
+     └─> PlayerPrefs.SetInt("EnableSound", enableSound ? 1 : 0)
+     └─> PlayerPrefs.SetInt("EnableVibration", enableVibration ? 1 : 0)
+     └─> PlayerPrefs.Save()
+     
+4.3. Feedback visuel
+     └─> Affichage message "✓ Paramètres sauvegardés"
+     └─> Animation fade out après 2 secondes
+```
+
+**Validation** :
+- ✅ Console : "Settings saved successfully"
+- ✅ UI : Message de confirmation
+- ✅ Persistance : PlayerPrefs.HasKey("ARMode") == true
+
+---
+
+#### Étape 5 : Retour à la Scène Précédente
+**Durée** : 0.3 seconde
+
+**Séquence d'exécution** :
+```
+5.1. Utilisateur clique "Retour" ou "← Précédent"
+     └─> SettingsPanel.OnBackButtonClick()
+     
+5.2. Détermination de la scène de retour
+     └─> Option A : SceneLoader.LoadPreviousScene()
+     └─> Option B : SceneLoader.LoadScene("MainMenu")
+     
+5.3. Application des nouveaux paramètres
+     └─> Les composants lisent AppSettings au prochain Start()
+     └─> Exemple : QRCodeScanner lit scanFrequency
+     
+5.4. Retour à la scène
+     └─> Unity charge la scène de destination
+     └─> AppSettings persiste (DontDestroyOnLoad)
+```
+
+**Validation** :
+- ✅ UI : Retour à la scène attendue
+- ✅ État : Paramètres appliqués dans nouvelle scène
+- ✅ Console : "Returned from Settings"
+
+---
+
+### Workflow 3 : Gestion d'Erreur - Produit Non Trouvé
+
+#### Séquence Complète
+**Durée** : 3-5 secondes
 
 ```
-1. Depuis n'importe quelle scène
-   └─> Clic sur bouton "Paramètres"
+1. QR Code scanné avec ID invalide
+   └─> QRCodeScanner détecte "SMARTRETAIL:PROD999"
    
-2. Settings.unity chargée
-   └─> AppSettings charge les préférences
-       └─> SettingsPanel affiche les options
-       
-3. Modifications utilisateur
-   └─> Toggles/Sliders modifiés
-       └─> Changements sauvegardés en temps réel
-       
-4. Clic sur "Sauvegarder"
-   └─> AppSettings.SaveSettings()
-       └─> Persistance dans PlayerPrefs
-       
-5. Retour à la scène précédente
-   └─> Paramètres appliqués
+2. Recherche dans la base
+   └─> Product product = ProductDatabase.Instance.GetProductById("PROD999")
+   └─> Result : product == null
+   
+3. Gestion de l'erreur
+   └─> Debug.LogWarning("Product PROD999 not found")
+   └─> Affichage message UI : "Produit non reconnu"
+   └─> Son d'erreur (si enableSound == true)
+   
+4. Options utilisateur
+   └─> Bouton "Réessayer" → Reste sur QRScanner
+   └─> Bouton "Menu" → Retour MainMenu
+   
+5. Pas de transition vers AR
+   └─> ARProductView n'est PAS chargé
+   └─> Utilisateur peut scanner un autre code
 ```
+
+**Validation** :
+- ✅ UI : Message d'erreur visible
+- ✅ Comportement : App ne crash pas
+- ✅ UX : Options de récupération disponibles
+
+---
+
+### Workflow 4 : Mode Débogage - Simulation Sans Caméra
+
+#### Étapes pour Test sans Appareil AR
+
+```
+1. Activer le mode DEBUG dans GameManager
+   └─> GameManager.IsDebugMode = true
+   └─> Console : "DEBUG MODE ENABLED"
+   
+2. Bypass vérification caméra
+   └─> QRCodeScanner.Start()
+   └─> if (IsDebugMode) SkipCameraInitialization()
+   
+3. Utiliser SimulateScan()
+   └─> Dans Unity Console :
+       QRCodeScanner.Instance.SimulateScan("SMARTRETAIL:PROD001")
+   
+4. Bypass vérification AR
+   └─> ARSessionManager.Start()
+   └─> if (IsDebugMode) SimulateARSession()
+   
+5. Tester workflows complets sans matériel
+   └─> Navigation complète possible
+   └─> UI testable dans Unity Editor
+```
+
+**Validation** :
+- ✅ Console : "DEBUG: Simulating QR scan"
+- ✅ Console : "DEBUG: Simulating AR session"
+- ✅ Comportement : Workflows fonctionnent sans caméra
 
 ---
 
