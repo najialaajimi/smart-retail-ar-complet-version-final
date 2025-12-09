@@ -76,7 +76,7 @@ public class AutoSceneSetup : EditorWindow
 
         // Créer GameManager
         GameObject gameManager = CreateOrGetGameObject("GameManager");
-        AddComponentIfMissing<SmartRetailAR.GameManager>(gameManager);
+        AddComponentIfMissing<SmartRetailAR.Core.GameManager>(gameManager);
 
         // Créer Canvas principal
         GameObject canvas = CreateOrGetCanvas("MainMenuCanvas");
@@ -102,7 +102,7 @@ public class AutoSceneSetup : EditorWindow
 
         // Ajouter MainMenuController
         GameObject controller = CreateOrGetGameObject("MainMenuController");
-        AddComponentIfMissing<SmartRetailAR.MainMenuController>(controller);
+        AddComponentIfMissing<SmartRetailAR.UI.MainMenuController>(controller);
 
         EditorSceneManager.SaveScene(scene);
         Debug.Log("✅ MainMenu scene configured");
@@ -120,7 +120,7 @@ public class AutoSceneSetup : EditorWindow
 
         // Créer QRScanner Manager
         GameObject scannerManager = CreateOrGetGameObject("QRScannerManager");
-        AddComponentIfMissing<SmartRetailAR.QRCodeScanner>(scannerManager);
+        AddComponentIfMissing<SmartRetailAR.QRCode.QRCodeScanner>(scannerManager);
 
         // Créer Canvas
         GameObject canvas = CreateOrGetCanvas("QRScannerCanvas");
@@ -169,11 +169,11 @@ public class AutoSceneSetup : EditorWindow
 
         // Créer AR Manager
         GameObject arManager = CreateOrGetGameObject("ARSessionManager");
-        AddComponentIfMissing<SmartRetailAR.ARSessionManager>(arManager);
+        AddComponentIfMissing<SmartRetailAR.AR.ARSessionManager>(arManager);
 
         // Créer Placement Manager
         GameObject placementManager = CreateOrGetGameObject("ARPlacementManager");
-        AddComponentIfMissing<SmartRetailAR.ARPlacementManager>(placementManager);
+        AddComponentIfMissing<SmartRetailAR.AR.ARPlacementManager>(placementManager);
 
         // Créer Canvas AR Overlay
         GameObject canvas = CreateOrGetCanvas("AROverlayCanvas");
@@ -181,7 +181,7 @@ public class AutoSceneSetup : EditorWindow
         // Panneau d'informations produit
         GameObject productPanel = CreateOrGetGameObject("ProductInfoPanel", canvas.transform);
         AddComponentIfMissing<Image>(productPanel);
-        AddComponentIfMissing<SmartRetailAR.ProductInfoPanel>(productPanel);
+        AddComponentIfMissing<SmartRetailAR.UI.ProductInfoPanel>(productPanel);
         SetRectTransform(productPanel, new Vector2(0.5f, 0.8f), new Vector2(0.5f, 0.8f), new Vector2(0, 0), new Vector2(400, 200));
 
         // Boutons d'action
@@ -204,7 +204,7 @@ public class AutoSceneSetup : EditorWindow
 
         // Créer Recommendation Engine
         GameObject engine = CreateOrGetGameObject("RecommendationEngine");
-        AddComponentIfMissing<SmartRetailAR.RecommendationEngine>(engine);
+        AddComponentIfMissing<SmartRetailAR.Recommendations.RecommendationEngine>(engine);
 
         // Créer Canvas
         GameObject canvas = CreateOrGetCanvas("RecommendationsCanvas");
@@ -220,12 +220,12 @@ public class AutoSceneSetup : EditorWindow
         // Panneau de filtres
         GameObject filterPanel = CreateOrGetGameObject("FilterPanel", canvas.transform);
         AddComponentIfMissing<Image>(filterPanel);
-        AddComponentIfMissing<SmartRetailAR.FilterPanel>(filterPanel);
+        AddComponentIfMissing<SmartRetailAR.UI.FilterPanel>(filterPanel);
         SetRectTransform(filterPanel, new Vector2(0.5f, 0.75f), new Vector2(0.5f, 0.75f), new Vector2(0, 0), new Vector2(700, 100));
 
         // Scroll View pour les recommandations
         GameObject scrollView = CreateScrollView(canvas.transform, "RecommendationsScrollView");
-        AddComponentIfMissing<SmartRetailAR.RecommendationUI>(scrollView);
+        AddComponentIfMissing<SmartRetailAR.UI.RecommendationUI>(scrollView);
 
         // Bouton retour
         CreateMenuButton(canvas.transform, "BackButton", "Retour", new Vector2(0.1f, 0.05f), "MainMenu");
@@ -246,7 +246,7 @@ public class AutoSceneSetup : EditorWindow
 
         // Créer AppSettings
         GameObject appSettings = CreateOrGetGameObject("AppSettings");
-        AddComponentIfMissing<SmartRetailAR.AppSettings>(appSettings);
+        AddComponentIfMissing<SmartRetailAR.Core.AppSettings>(appSettings);
 
         // Créer Canvas
         GameObject canvas = CreateOrGetCanvas("SettingsCanvas");
@@ -262,7 +262,7 @@ public class AutoSceneSetup : EditorWindow
         // Panneau de paramètres
         GameObject settingsPanel = CreateOrGetGameObject("SettingsPanel", canvas.transform);
         AddComponentIfMissing<Image>(settingsPanel);
-        AddComponentIfMissing<SmartRetailAR.SettingsPanel>(settingsPanel);
+        AddComponentIfMissing<SmartRetailAR.UI.SettingsPanel>(settingsPanel);
         SetRectTransform(settingsPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 0), new Vector2(600, 400));
 
         // Boutons
