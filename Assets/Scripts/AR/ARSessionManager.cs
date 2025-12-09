@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.XR.ARFoundation;
+using Unity.XR.CoreUtils;
 
 namespace SmartRetailAR.AR
 {
@@ -27,7 +28,7 @@ namespace SmartRetailAR.AR
 
         [Header("Composants AR")]
         [SerializeField] private ARSession arSession;
-        [SerializeField] private UnityEngine.XR.ARFoundation.XROrigin xrOrigin;
+        [SerializeField] private XROrigin xrOrigin;
 
         [Header("Événements")]
         public UnityEvent onARSessionInitialized = new UnityEvent();
@@ -58,7 +59,7 @@ namespace SmartRetailAR.AR
 
             if (xrOrigin == null)
             {
-                xrOrigin = FindObjectOfType<UnityEngine.XR.ARFoundation.XROrigin>();
+                xrOrigin = FindObjectOfType<XROrigin>();
             }
         }
 

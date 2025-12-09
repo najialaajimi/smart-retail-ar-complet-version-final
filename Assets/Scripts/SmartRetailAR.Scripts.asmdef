@@ -4,6 +4,7 @@
     "references": [
         "Unity.XR.ARFoundation",
         "Unity.XR.ARSubsystems",
+        "Unity.XR.CoreUtils",
         "Unity.InputSystem",
         "Unity.TextMeshPro"
     ],
