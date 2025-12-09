@@ -1,0 +1,34 @@
+{
+  "categories": [
+    {
+      "id": "CAT001",
+      "name": "Produits laitiers",
+      "description": "Lait, yaourts, fromages et dérivés",
+      "icon": "dairy_icon.png"
+    },
+    {
+      "id": "CAT002",
+      "name": "Fruits et légumes",
+      "description": "Fruits et légumes frais",
+      "icon": "fruits_vegetables_icon.png"
+    },
+    {
+      "id": "CAT003",
+      "name": "Boissons",
+      "description": "Boissons chaudes et froides",
+      "icon": "beverages_icon.png"
+    },
+    {
+      "id": "CAT004",
+      "name": "Snacks",
+      "description": "Collations et en-cas",
+      "icon": "snacks_icon.png"
+    },
+    {
+      "id": "CAT005",
+      "name": "Produits d'entretien",
+      "description": "Produits de nettoyage écologiques",
+      "icon": "cleaning_icon.png"
+    }
+  ]
+}
