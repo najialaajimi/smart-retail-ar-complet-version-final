@@ -1,0 +1,50 @@
+{
+  "rules": [
+    {
+      "id": "RULE001",
+      "name": "Éco-responsable",
+      "description": "Recommande les produits avec un eco-score élevé",
+      "criteria": {
+        "minEcoScore": 70,
+        "requireEcoResponsible": true
+      },
+      "weight": 0.3
+    },
+    {
+      "id": "RULE002",
+      "name": "Bio prioritaire",
+      "description": "Favorise les produits biologiques",
+      "criteria": {
+        "requireBio": true
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "RULE003",
+      "name": "Nutritionnel optimal",
+      "description": "Recommande les produits avec le meilleur nutri-score",
+      "criteria": {
+        "maxNutriScore": "B"
+      },
+      "weight": 0.3
+    },
+    {
+      "id": "RULE004",
+      "name": "Prix attractif",
+      "description": "Favorise les produits au meilleur rapport qualité-prix",
+      "criteria": {
+        "priceWeight": 0.2
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "RULE005",
+      "name": "Origine locale",
+      "description": "Privilégie les produits français",
+      "criteria": {
+        "preferredOrigins": ["France"]
+      },
+      "weight": 0.1
+    }
+  ]
+}
