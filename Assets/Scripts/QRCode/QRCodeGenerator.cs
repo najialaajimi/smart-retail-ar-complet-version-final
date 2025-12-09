@@ -14,7 +14,9 @@ namespace SmartRetailAR.QRCode
         [SerializeField] private int qrCodeSize = 256;
 
         [Tooltip("Marge autour du QR code")]
+        #pragma warning disable 0414 // Field assigned but never used - reserved for ZXing.Net integration
         [SerializeField] private int margin = 0;
+        #pragma warning restore 0414
 
         /// <summary>
         /// Génère un QR code à partir de données textuelles

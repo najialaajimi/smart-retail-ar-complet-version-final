@@ -86,26 +86,30 @@ namespace SmartRetailAR.AR
         /// </summary>
         private System.Collections.IEnumerator CheckARSupportCoroutine()
         {
-            // Vérifier le support AR
-            var checkAvailability = ARSession.CheckAvailability();
-            yield return checkAvailability;
-
-            if (checkAvailability.IsCompleted)
+            // Vérifier le support AR de manière asynchrone
+            var availability = ARSession.state;
+            
+            // Si l'état n'est pas encore déterminé, attendre
+            while (ARSession.state == ARSessionState.None || 
+                   ARSession.state == ARSessionState.CheckingAvailability)
             {
-                ARSessionState availability = checkAvailability.Result;
-                isARSupported = availability == ARSessionState.Ready || 
-                                availability == ARSessionState.SessionInitializing;
+                yield return null;
+            }
 
-                if (isARSupported)
-                {
-                    Debug.Log("AR supporté sur cet appareil");
-                    InitializeARSession();
-                }
-                else
-                {
-                    Debug.LogError($"AR non supporté: {availability}");
-                    onARSessionFailed?.Invoke();
-                }
+            availability = ARSession.state;
+            isARSupported = availability == ARSessionState.Ready || 
+                            availability == ARSessionState.SessionInitializing ||
+                            availability == ARSessionState.SessionTracking;
+
+            if (isARSupported)
+            {
+                Debug.Log("AR supporté sur cet appareil");
+                InitializeARSession();
+            }
+            else
+            {
+                Debug.LogError($"AR non supporté: {availability}");
+                onARSessionFailed?.Invoke();
             }
         }
 

@@ -47,7 +47,7 @@ namespace SmartRetailAR.AR
             }
 
             // Configuration
-            trackedImageManager.maxNumberOfMovingImages = maxNumberOfMovingImages;
+            trackedImageManager.requestedMaxNumberOfMovingImages = maxNumberOfMovingImages;
 
             if (imageLibrary != null)
             {
