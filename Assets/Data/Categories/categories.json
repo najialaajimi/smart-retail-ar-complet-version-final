@@ -1,0 +1,46 @@
+{
+  "categories": [
+    {
+      "id": "CAT001",
+      "name": "Produits laitiers",
+      "description": "Lait, yaourts, fromages et desserts lactés",
+      "icon": "categories/laitiers.png",
+      "color": "#E3F2FD"
+    },
+    {
+      "id": "CAT002",
+      "name": "Boissons végétales",
+      "description": "Alternatives végétales au lait",
+      "icon": "categories/boissons_vegetales.png",
+      "color": "#E8F5E9"
+    },
+    {
+      "id": "CAT003",
+      "name": "Boulangerie",
+      "description": "Pain, viennoiseries et pâtisseries",
+      "icon": "categories/boulangerie.png",
+      "color": "#FFF3E0"
+    },
+    {
+      "id": "CAT004",
+      "name": "Desserts végétaux",
+      "description": "Desserts à base de soja, amande, coco",
+      "icon": "categories/desserts_vegetaux.png",
+      "color": "#F3E5F5"
+    },
+    {
+      "id": "CAT005",
+      "name": "Épicerie",
+      "description": "Pâtes, riz, huiles et condiments",
+      "icon": "categories/epicerie.png",
+      "color": "#FFF9C4"
+    },
+    {
+      "id": "CAT006",
+      "name": "Fruits & Légumes",
+      "description": "Produits frais de saison",
+      "icon": "categories/fruits_legumes.png",
+      "color": "#C8E6C9"
+    }
+  ]
+}
