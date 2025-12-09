@@ -528,7 +528,33 @@ Debug.Log($"Latence: {latency}s");
 
 ## Outils de Développement
 
-### 1. Générateur de QR Codes
+### 1. Configuration Automatique des Scènes (NOUVEAU) ⭐
+
+**Accès :** `Tools > Smart Retail AR > Auto Scene Setup`
+
+**Fonctionnalités :**
+- Configuration automatique de toutes les scènes en un clic
+- Création des GameObjects avec hiérarchie complète
+- Attribution automatique de tous les composants (AddComponent)
+- Canvas, EventSystem, UI configurés automatiquement
+- Boutons de navigation entre scènes pré-câblés
+
+**Utilisation :**
+1. Unity Editor → `Tools > Smart Retail AR > Auto Scene Setup`
+2. Cocher les scènes à configurer (ou toutes)
+3. Cliquer sur "Configurer les Scènes Sélectionnées"
+4. Les scènes sont automatiquement configurées !
+
+**Ce qui est créé automatiquement :**
+- **MainMenu** : GameManager, Canvas, Boutons de navigation, MainMenuController
+- **QRScanner** : QRCodeScanner, Zone de visée, Instructions, Bouton retour
+- **ARProductView** : AR Session, XR Origin, ARSessionManager, ProductInfoPanel
+- **Recommendations** : RecommendationEngine, FilterPanel, ScrollView, RecommendationUI
+- **Settings** : AppSettings, SettingsPanel, Boutons de sauvegarde
+
+---
+
+### 2. Générateur de QR Codes
 
 **Accès :** `Tools > Smart Retail AR > QR Code Generator`
 
@@ -543,7 +569,7 @@ Debug.Log($"Latence: {latency}s");
 
 ---
 
-### 2. Éditeur de Base de Données Produits
+### 3. Éditeur de Base de Données Produits
 
 **Accès :** Sélectionnez `Assets/Data/products.json` dans l'Inspector
 
@@ -555,7 +581,7 @@ Debug.Log($"Latence: {latency}s");
 
 ---
 
-### 3. Scene Setup Wizard
+### 4. Scene Setup Wizard
 
 **Accès :** `Tools > Smart Retail AR > Scene Setup Wizard`
 
@@ -566,7 +592,7 @@ Debug.Log($"Latence: {latency}s");
 
 ---
 
-### 4. Auto Runner de Scènes
+### 5. Auto Runner de Scènes
 
 **Utilisation :**
 ```csharp
