@@ -27,7 +27,7 @@ namespace SmartRetailAR.AR
 
         [Header("Composants AR")]
         [SerializeField] private ARSession arSession;
-        [SerializeField] private ARSessionOrigin arSessionOrigin;
+        [SerializeField] private UnityEngine.XR.ARFoundation.XROrigin xrOrigin;
 
         [Header("Événements")]
         public UnityEvent onARSessionInitialized = new UnityEvent();
@@ -56,9 +56,9 @@ namespace SmartRetailAR.AR
                 arSession = GetComponent<ARSession>();
             }
 
-            if (arSessionOrigin == null)
+            if (xrOrigin == null)
             {
-                arSessionOrigin = FindObjectOfType<ARSessionOrigin>();
+                xrOrigin = FindObjectOfType<UnityEngine.XR.ARFoundation.XROrigin>();
             }
         }
 
