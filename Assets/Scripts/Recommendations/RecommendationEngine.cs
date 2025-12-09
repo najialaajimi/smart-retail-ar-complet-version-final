@@ -263,6 +263,14 @@ namespace SmartRetailAR.Recommendations
                 .ToList();
         }
 
+        // Constantes pour le Nutri-Score
+        private const int NUTRISCORE_A = 1;
+        private const int NUTRISCORE_B = 2;
+        private const int NUTRISCORE_C = 3;
+        private const int NUTRISCORE_D = 4;
+        private const int NUTRISCORE_E = 5;
+        private const int NUTRISCORE_DEFAULT = NUTRISCORE_C;
+
         /// <summary>
         /// Convertit le nutri-score en valeur numérique (A=1, E=5)
         /// </summary>
@@ -270,17 +278,17 @@ namespace SmartRetailAR.Recommendations
         {
             if (string.IsNullOrEmpty(nutriScore))
             {
-                return 3; // Valeur par défaut C
+                return NUTRISCORE_DEFAULT;
             }
 
             switch (nutriScore.ToUpper())
             {
-                case "A": return 1;
-                case "B": return 2;
-                case "C": return 3;
-                case "D": return 4;
-                case "E": return 5;
-                default: return 3;
+                case "A": return NUTRISCORE_A;
+                case "B": return NUTRISCORE_B;
+                case "C": return NUTRISCORE_C;
+                case "D": return NUTRISCORE_D;
+                case "E": return NUTRISCORE_E;
+                default: return NUTRISCORE_DEFAULT;
             }
         }
 

@@ -70,12 +70,21 @@ namespace SmartRetailAR.AR
         /// <summary>
         /// Vérifie si AR est supporté sur l'appareil
         /// </summary>
-        private async void CheckARSupport()
+        private void CheckARSupport()
         {
             #if UNITY_EDITOR
             Debug.LogWarning("AR non disponible dans l'éditeur Unity");
             isARSupported = false;
             #else
+            StartCoroutine(CheckARSupportCoroutine());
+            #endif
+        }
+
+        /// <summary>
+        /// Coroutine pour vérifier le support AR
+        /// </summary>
+        private System.Collections.IEnumerator CheckARSupportCoroutine()
+        {
             // Vérifier le support AR
             var checkAvailability = ARSession.CheckAvailability();
             yield return checkAvailability;
@@ -97,7 +106,6 @@ namespace SmartRetailAR.AR
                     onARSessionFailed?.Invoke();
                 }
             }
-            #endif
         }
 
         /// <summary>
